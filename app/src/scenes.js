@@ -1,59 +1,101 @@
-// Fixed scenes for screenshots, driven by the page's own query string:
-// ?shot=cover fills the window with one finished poster; ?shot=editor
-// shows the studio mid-edit with photos loaded and a panel picked.
-// Parameters: layout, grade, size, frame, title, subtitle, kicker and
-// photos (comma-separated sample names, dealt round-robin into the
-// panels). window.__shotReady is set once the scene has painted, so a
-// screenshot tool can wait for it instead of guessing a delay.
+// Screenshot scenes for Neon Leonida Cover Studio.
+//
+// The studio page reads its own query string: ?shot=cover renders just the
+// poster for a cover screenshot, ?shot=editor shows the full workbench with
+// the sample photos already loaded. Everything else — size, collage, grade,
+// photos, hero pick, per-panel vertical anchors, words — comes from the
+// same query string, so shots.json can describe each screenshot exactly.
+//
+// This module only parses that query string and drives the studio through
+// the small control object editor.js hands it; it owns no drawing itself.
 
-import { findLayout, slotsFor } from './poster.js';
-
-export async function stageScene(scene, query, host) {
-  if (scene === 'cover') document.body.classList.add('scene-cover');
-  if (scene === 'editor') document.body.classList.add('scene-editor');
-  const wanted = (query.get('photos') ?? 'boulevard,pier')
-    .split(',').map((s) => s.trim()).filter(Boolean);
-  const images = [];
-  for (const name of wanted) {
-    const sample = host.builtin.find((s) => s.name === name) ?? host.builtin[0];
-    images.push(await host.shelve(sample.url, sample.label));
-  }
-  const layoutId = query.get('layout') ?? 'saga';
-  const layout = findLayout(layoutId);
-  const slots = slotsFor(layoutId, images);
-  // Alternate the vertical framing so neighbouring panels do not crop the
-  // same way — the collage reads as many moments, not one photo tiled.
-  // An ?oy=0.6,0.4,... list overrides it per panel (wide bands need it: a
-  // 6-to-1 strip shows only a thin slice of a square photo).
-  const oyList = (query.get('oy') ?? '').split(',').map((s) => parseFloat(s));
-  slots.forEach((slot, i) => {
-    slot.oy = Number.isFinite(oyList[i]) ? oyList[i] : (i % 2 ? 0.34 : 0.58);
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error(`could not load ${src}`));
+    img.src = src;
   });
-  // ?hero=<sample> pins that photo into every lead panel, so the poster's
-  // lead is a person, not whichever photo the round-robin dealt there.
-  const heroName = query.get('hero');
-  if (heroName) {
-    const heroSample = host.builtin.find((s) => s.name === heroName);
-    const heroImg = images[wanted.indexOf(heroName)] ?? (heroSample ? await host.shelve(heroSample.url, heroSample.label) : null);
-    if (heroImg) {
-      layout.panels.forEach((p, i) => {
-        if (p.lead) {
-          slots[i].img = heroImg;
-          slots[i].oy = 0.42;
-        }
-      });
+}
+
+function splitList(raw) {
+  return raw.split(',').map((part) => part.trim()).filter(Boolean);
+}
+
+function splitNumbers(raw) {
+  return splitList(raw).map((part) => {
+    const n = Number.parseFloat(part);
+    return Number.isFinite(n) ? n : 0.5;
+  });
+}
+
+// Turn the literal "\n" sequences a query string carries into real newlines
+// so a two-line title survives the URL.
+function unescapeTitle(raw) {
+  return raw.split('\\n').join('\n');
+}
+
+export function readScene(search) {
+  const q = new URLSearchParams(search);
+  return {
+    shot: q.get('shot') || '',
+    size: q.get('size') || '',
+    layout: q.get('layout') || '',
+    grade: q.get('grade') || '',
+    frame: q.get('frame') || '',
+    photos: q.get('photos') ? splitList(q.get('photos')) : [],
+    hero: q.get('hero') || '',
+    anchors: q.get('oy') ? splitNumbers(q.get('oy')) : [],
+    kicker: q.get('kicker') || '',
+    title: q.get('title') ? unescapeTitle(q.get('title')) : '',
+    subtitle: q.get('subtitle') || '',
+  };
+}
+
+// Drive the studio from a parsed scene. Sample photos live beside the app
+// under samples/ and are loaded by name, e.g. photos=boulevard,pier.
+// The hero photo goes into panel 0; the rest cycle through the other
+// panels; each oy value pins that panel's photo vertically (0 top, 1 bottom).
+export async function applyScene(controls, search) {
+  const scene = readScene(search);
+  if (!scene.shot) return false;
+  controls.scene = scene.shot;
+  document.body.classList.add(scene.shot === 'editor' ? 'scene-editor' : 'scene-cover');
+
+  if (scene.size) controls.setSize(scene.size);
+  if (scene.layout) controls.setLayout(scene.layout);
+  if (scene.grade) controls.setGrade(scene.grade);
+  if (scene.frame) controls.setFrame(scene.frame);
+  controls.setWords({
+    kicker: scene.kicker || undefined,
+    title: scene.title || undefined,
+    subtitle: scene.subtitle || undefined,
+  });
+
+  const loaded = [];
+  for (const name of scene.photos) {
+    try {
+      const img = await loadImage(`./samples/${name}.jpg`);
+      loaded.push({ img, name });
+    } catch {
+      // A missing sample is skipped; the panel keeps its painted scene.
     }
   }
-  host.apply({
-    layoutId,
-    gradeId: query.get('grade') ?? 'sunset',
-    sizeId: query.get('size') ?? 'portrait',
-    frame: query.get('frame') ?? 'white',
-    title: (query.get('title') ?? 'NEON\nLEONIDA').replace(/\\n/g, '\n'),
-    subtitle: query.get('subtitle') ?? 'VICE CITY HEAT',
-    kicker: query.get('kicker') ?? 'LEONIDA · POP. TROUBLE',
-    slots,
-    selected: Math.max(0, layout.panels.findIndex((p) => p.lead)),
-  });
-  requestAnimationFrame(() => requestAnimationFrame(() => { window.__shotReady = true; }));
+  if (!loaded.length) {
+    controls.render();
+    return true;
+  }
+  loaded.forEach(({ img, name }) => controls.addPhoto(img, name));
+
+  const heroAt = Math.max(0, loaded.findIndex((entry) => entry.name === scene.hero));
+  const order = [loaded[heroAt], ...loaded.filter((_, i) => i !== heroAt)];
+  const slots = controls.state.slots.length;
+  for (let i = 0; i < slots; i += 1) {
+    const pick = order[i % order.length];
+    controls.fillSlot(i, loaded.indexOf(pick));
+    if (scene.anchors[i] !== undefined) controls.setAnchor(i, scene.anchors[i]);
+  }
+  if (scene.shot === 'editor') controls.selectPanel(0);
+  controls.render();
+  return true;
 }
