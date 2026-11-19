@@ -1,0 +1,102 @@
+/* Neon Leonida Cover Studio — a dark studio wall behind a neon poster. */
+:root {
+  --night: #12081f;
+  --card: #1d1030;
+  --card-top: #271741;
+  --edge: #3d2560;
+  --paper: #f6eefc;
+  --soft: #b9a6d9;
+  --rose: #ef2c76;
+  --ember: #ff7a3c;
+  --amber: #ffd23c;
+  --aqua: #2fd4c4;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body {
+  background:
+    radial-gradient(1100px 520px at 85% -10%, rgba(239, 44, 118, 0.28), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(47, 212, 196, 0.2), transparent 55%),
+    var(--night);
+  color: var(--paper);
+  font: 15px/1.45 "Segoe UI", system-ui, sans-serif;
+}
+.studio { display: flex; gap: 28px; align-items: flex-start; justify-content: center; padding: 26px; max-width: 1560px; margin: 0 auto; }
+.panel { width: 348px; flex: 0 0 348px; display: flex; flex-direction: column; gap: 16px; max-height: calc(100vh - 52px); overflow-y: auto; padding-right: 6px; }
+.masthead h1 {
+  margin: 0; font-size: 34px; letter-spacing: 0.5px; font-weight: 900; text-transform: uppercase;
+  background: linear-gradient(92deg, #fff 20%, var(--amber) 48%, var(--ember) 68%, var(--rose) 95%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.strapline { margin: 2px 0 0; color: var(--soft); }
+.card { background: linear-gradient(180deg, var(--card-top), var(--card)); border: 1px solid var(--edge); border-radius: 14px; padding: 14px 16px; }
+.card h2 { margin: 0 0 10px; font-size: 13px; letter-spacing: 2.2px; text-transform: uppercase; color: var(--amber); }
+.card h2:not(:first-child) { margin-top: 14px; }
+.faint { color: var(--soft); letter-spacing: 0.4px; text-transform: none; }
+.tip { margin: 0 0 10px; color: var(--soft); font-size: 13px; }
+.field { display: flex; flex-direction: column; gap: 6px; font-weight: 600; margin-bottom: 10px; }
+.field:last-child { margin-bottom: 0; }
+input[type="text"], textarea {
+  font: inherit; font-weight: 600; padding: 9px 10px; border-radius: 8px;
+  border: 1px solid var(--edge); background: #150a26; color: var(--paper); resize: vertical;
+}
+input[type="text"]:focus, textarea:focus { outline: 2px solid var(--rose); outline-offset: 1px; }
+.uploader {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  border: 1.5px dashed var(--rose); border-radius: 12px; padding: 14px; text-align: center;
+  cursor: pointer; background: rgba(239, 44, 118, 0.08);
+}
+.uploader input { display: none; }
+.uploader strong { font-size: 16px; font-weight: 800; }
+.uploader span { color: var(--soft); font-weight: 500; font-size: 13px; }
+.rail { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 10px 0; }
+.rail:empty { display: none; }
+.thumb { position: relative; margin: 0; padding: 0; border: 2px solid transparent; border-radius: 9px; overflow: hidden; cursor: pointer; background: #000; aspect-ratio: 1; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.thumb figcaption {
+  position: absolute; left: 0; right: 0; bottom: 0; padding: 2px 4px; font-size: 9.5px; font-weight: 700;
+  background: rgba(10, 4, 22, 0.78); color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.thumb.picked { border-color: var(--amber); box-shadow: 0 0 0 2px rgba(255, 210, 60, 0.35); }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+button { font: inherit; cursor: pointer; }
+.pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+.pill {
+  border: 1px solid var(--edge); background: #150a26; color: var(--paper);
+  border-radius: 999px; padding: 7px 12px; font-size: 13px; font-weight: 700;
+}
+.pill:hover { border-color: var(--rose); }
+.pill.active { background: var(--rose); border-color: var(--rose); color: #fff; }
+.soft {
+  border: 1px solid var(--edge); background: #150a26; color: var(--paper);
+  border-radius: 9px; padding: 8px 12px; font-size: 13px; font-weight: 700;
+}
+.soft:hover { border-color: var(--rose); }
+.primary {
+  width: 100%; margin-top: 10px; padding: 13px; border: 0; border-radius: 11px;
+  background: linear-gradient(92deg, var(--rose), var(--ember)); color: #fff;
+  font-size: 17px; font-weight: 900; letter-spacing: 0.4px;
+}
+.primary:hover { filter: brightness(1.1); }
+.zoomline { display: flex; align-items: center; gap: 10px; font-weight: 600; margin-bottom: 10px; }
+.zoomline input { flex: 1; accent-color: var(--rose); }
+.toggle { display: flex; align-items: center; gap: 8px; font-weight: 600; margin: 10px 0 0; cursor: pointer; }
+.toggle input { accent-color: var(--rose); width: 16px; height: 16px; }
+#notice { margin: 10px 0 0; color: var(--soft); font-size: 13px; min-height: 18px; }
+.canvasWrap { flex: 1; display: flex; justify-content: center; min-width: 0; }
+#posterCanvas {
+  max-width: 100%; max-height: calc(100vh - 52px); width: auto; height: auto;
+  border-radius: 6px; box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55); touch-action: none; cursor: grab;
+}
+#posterCanvas:active { cursor: grabbing; }
+/* Screenshot scenes: the cover fills the whole window, no chrome around it. */
+body.scene-cover { background: #0a0616; }
+body.scene-cover .studio { padding: 0; max-width: none; }
+body.scene-cover .panel { display: none; }
+body.scene-cover .canvasWrap { display: block; }
+body.scene-cover #posterCanvas { max-height: 100vh; max-width: 100vw; border-radius: 0; box-shadow: none; display: block; margin: 0 auto; }
+body.scene-editor .canvasWrap { align-items: flex-start; }
+@media (max-width: 900px) {
+  .studio { flex-direction: column; }
+  .panel { width: 100%; flex: none; max-height: none; }
+}

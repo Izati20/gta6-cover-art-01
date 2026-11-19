@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Neon Leonida — Cover Studio</title>
+<meta name="description" content="Turn your photos into multi-panel Leonida cover art: five collage layouts, five sunset and neon grades, bold poster lettering, exported as a PNG.">
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<div class="studio">
+  <aside class="panel" aria-label="Cover controls">
+    <header class="masthead">
+      <h1>Neon Leonida</h1>
+      <p class="strapline">Cover Studio — your photos, one Leonida poster.</p>
+    </header>
+
+    <section class="card">
+      <h2>Step 1 — Photos</h2>
+      <label class="uploader">
+        <input id="filePicker" type="file" accept="image/*" multiple>
+        <strong>Add your photos</strong>
+        <span>Read on this machine only — never uploaded.</span>
+      </label>
+      <div id="photoRail" class="rail" aria-label="Photo rail"></div>
+      <div class="actions">
+        <button id="fillEverywhere" type="button" class="soft">One photo in every panel</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Step 2 — Panel <span id="panelNote" class="faint"></span></h2>
+      <p class="tip">Click a panel on the poster to pick it, click a photo above to fill it, drag the poster to reframe, scroll to zoom.</p>
+      <label class="zoomline">Zoom <input id="zoomRange" type="range" min="100" max="300" value="100"> <span id="zoomReadout">100%</span></label>
+      <div class="actions">
+        <button id="emptyPanel" type="button" class="soft">Empty panel (painted scene)</button>
+        <button id="dealAgain" type="button" class="soft">Shuffle photos</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Step 3 — Layout</h2>
+      <div id="layoutRow" class="pills"></div>
+      <h2>Step 4 — Colour grade</h2>
+      <div id="gradeRow" class="pills"></div>
+    </section>
+
+    <section class="card">
+      <h2>Step 5 — Words</h2>
+      <label class="field">Kicker <input id="kickerField" type="text" maxlength="42"></label>
+      <label class="field">Title <textarea id="titleField" rows="2" maxlength="42"></textarea></label>
+      <label class="field">Subtitle bar <input id="subtitleField" type="text" maxlength="34"></label>
+    </section>
+
+    <section class="card">
+      <h2>Step 6 — Export</h2>
+      <div id="sizeRow" class="pills"></div>
+      <div id="frameRow" class="pills"></div>
+      <label class="toggle"><input id="grainToggle" type="checkbox" checked> Print grain &amp; dot screen</label>
+      <button id="exportButton" type="button" class="primary">Export PNG</button>
+      <button id="resetButton" type="button" class="soft">Start over</button>
+      <p id="notice" role="status"></p>
+    </section>
+  </aside>
+  <section class="canvasWrap">
+    <canvas id="posterCanvas" width="1080" height="1350" aria-label="Your cover art"></canvas>
+  </section>
+</div>
+<script type="module" src="./src/editor.js"></script>
+</body>
+</html>
